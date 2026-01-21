@@ -68,9 +68,15 @@ questions = {
     }
 }
 
+# --- ジャンル一覧を質問データから自動取得 ---
+all_genres = set()
+for opts in questions.values():
+    for gmap in opts.values():
+        all_genres.update(gmap.keys())
+
 # --- 初期スコア ---
 if "scores" not in st.session_state:
-    st.session_state.scores = {"J-POP": 0, "POP": 0, "ROCK": 0, "HIPHOP": 0, "EDM": 0}
+    st.session_state.scores = {g: 0 for g in all_genres}
 
 # --- 質問表示 ---
 answers = {}
@@ -80,7 +86,7 @@ for q, options in questions.items():
 # --- 診断ボタン ---
 if st.button("診断する"):
     # スコアリセット
-    scores = {"J-POP": 0, "POP": 0, "ROCK": 0, "HIPHOP": 0, "EDM": 0}
+    scores = {g: 0 for g in all_genres}
 
     # スコア計算
     for q, answer in answers.items():
