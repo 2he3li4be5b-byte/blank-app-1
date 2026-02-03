@@ -1,7 +1,9 @@
 import streamlit as st
-from supabase import create_client   # ← ①追加
+from supabase import create_client
 
-# ← ①追加：Supabase 接続
+# -----------------------------
+# Supabase 接続（最初に1回だけ）
+# -----------------------------
 supabase = create_client(
     st.secrets["SUPABASE_URL"],
     st.secrets["SUPABASE_KEY"]
@@ -10,11 +12,22 @@ supabase = create_client(
 st.set_page_config(page_title="音楽ジャンル診断", page_icon="🎵")
 
 st.title("🎵 データで見る音楽ジャンル診断")
-st.write("いくつかの質問に答えると、あなたに合った音楽ジャンルとおすすめアーティストを診断します。")
+st.write("いくつかの質問に答えると、あなたに合った音楽ジャンルを診断します。")
 
 # --- 質問と選択肢 ---
 questions = {
-    # （ここは元のままなので省略）
+    "Q1. 曲を聴くときに一番重視するのは？": {
+        "メロディ": {"J-POP": 2, "POP": 2},
+        "歌詞": {"J-POP": 3, "HIPHOP": 1},
+        "リズム": {"HIPHOP": 3, "EDM": 2},
+        "サウンドの迫力": {"ROCK": 3, "METAL": 2}
+    },
+    "Q2. 音楽をよく聴くシーンは？": {
+        "勉強・作業中": {"POP": 2, "LOFI": 3},
+        "通学・移動中": {"HIPHOP": 2, "ROCK": 2},
+        "運動・トレーニング": {"EDM": 3, "ROCK": 2},
+        "リラックスしたい時": {"J-POP": 2, "LOFI": 3}
+    }
 }
 
 # --- ジャンル一覧 ---
@@ -41,24 +54,14 @@ if st.button("診断する"):
     st.subheader("🎧 診断結果")
     st.write(f"あなたにおすすめの音楽ジャンルは **{best_genre}** です！")
 
-    # ← ②追加：Supabase に保存
+    # -----------------------------
+    # Supabase に保存（重要）
+    # -----------------------------
     supabase.table("app_data").insert({
         "result": best_genre
     }).execute()
 
-    st.success("診断結果を保存しました")
-
-    recommendations = {
-        "J-POP": ["YOASOBI", "米津玄師", "Official髭男dism"],
-        "POP": ["Taylor Swift", "Ariana Grande", "Ed Sheeran"],
-        "ROCK": ["ONE OK ROCK", "Foo Fighters", "RADWIMPS"],
-        "HIPHOP": ["Kendrick Lamar", "Creepy Nuts", "Drake"],
-        "EDM": ["Avicii", "The Chainsmokers", "Zedd"]
-    }
-
-    st.write("**おすすめアーティスト:**")
-    for artist in recommendations[best_genre]:
-        st.write(f"・{artist}")
+    st.success("診断結果を保存しました 🎉")
 
     st.subheader("ジャンル別スコア")
     st.bar_chart(scores)
