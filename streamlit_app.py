@@ -1,5 +1,14 @@
 import streamlit as st
 
+from supabase import create_client
+
+# Supabase 接続
+supabase = create_client(
+    st.secrets["SUPABASE_URL"],
+    st.secrets["SUPABASE_KEY"]
+)
+
+
 st.set_page_config(page_title="音楽ジャンル診断", page_icon="🎵")
 
 st.title("🎵 データで見る音楽ジャンル診断")
@@ -99,6 +108,13 @@ if st.button("診断する"):
     st.subheader("🎧 診断結果")
     st.write(f"あなたにおすすめの音楽ジャンルは **{best_genre}** です！")
 
+    
+    # ← ②追加：Supabase に保存
+    supabase.table("app_data").insert({
+        "result": best_genre
+    }).execute()
+
+    st.success("診断結果を保存しました")
     # アーティスト推薦
     recommendations = {
         "J-POP": ["YOASOBI", "米津玄師", "Official髭男dism"],
